@@ -4,6 +4,28 @@
 <style>
 
 </style>
+<script type="text/javascript" src="/static/js/jquery.notmin.js"></script>
+<script type="text/javascript" src="/static/js/jquery.mousewheel.js"></script>
+<script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/static/js/calc.js"></script>
+<script type="text/javascript" src="/static/js/calc-internal.js"></script>
+<script type="text/javascript" src="/static/js/calc-test.js"></script>
+<script type="text/javascript">
+$(function(){//onReady
+	var calc = new Calculator();
+	var input = new Input();
+	input.init();
+
+	_output = new Notebook($('#pane'), calc, input);
+	_output.init();
+
+	//example entry
+	_output.add('2+2^2/1');
+
+	$('#input').focus();
+});
+</script>
+
 {% endblock %}
 
 {% block body %}

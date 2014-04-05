@@ -33,3 +33,41 @@ body {
 		padding: 10px 0px;
 	}
 }
+/********** notebook specific ***********/
+#notebook{
+}
+#pane, .calc-input{
+	font-family: monospace;
+}
+#pane{
+	font-size: 18px;
+	margin: 2px;
+	border-right: 1px solid #3C6D7F;
+	overflow: auto;
+}
+#pane .statement{
+	background-color: #f0f0f0;
+	margin: 3px 0 6px 0;
+	padding: 3px 0;
+}
+.statement:hover{
+	background-color: #FDFF9E;
+}
+.statement .input{
+	padding: 0 10px;
+	text-align: left;
+}
+.statement .output{
+	padding: 0 10px;
+	text-align: right;
+}
+.statement .error{
+	color: #B51500;
+}
+.statement .input:hover, .statement .output:hover{
+	background-color: #FCFF59;
+	cursor: pointer;
+}
+.input-container-hover{
+	background-color: #FDFF9E;
+}
