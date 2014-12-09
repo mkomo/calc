@@ -76,17 +76,7 @@
 #extrema label{
 	clear: both;
 	float: left;
-	width: 60px;	
-}
-
-button{
-	cursor: pointer;
-	font-size: 16px;
-	padding: 4px;
-	margin: 2px 4px 4px 0;
-	background-color: rgba(13,108,0,0.4);
-	color: #fff;
-	border: 2px solid rgba(13,108,0,0.8);
+	width: 50px;
 }
 
 #extrema input{
@@ -108,13 +98,38 @@ h2{
 .input-container label{
 	font-weight: bold;
 	font-size: 23px;
-	width: 80px;
-	display:block;
 	margin: 0 0 0 10px;
+}
+
+button{
+	cursor: pointer;
+	font-size: 16px;
+	padding: 4px;
+	margin: 0px 4px 4px 0;
+	background-color: rgba(13,108,0,0.4);
+	color: #fff;
+	border: 2px solid rgba(13,108,0,0.8);
+	vertical-align: bottom;
 }
 
 .input-container textarea{
 	vertical-align: baseline;
+}
+
+
+@media screen and (max-width: 900px) {
+	#graph-controls {
+		float: none;
+	}
+	.graph-control {
+		float: left;
+	}
+	
+	#graph-list{
+		height: 110px;
+		width: 200px;
+		margin-right: 100px;
+	}
 }
 -->
 </style>
@@ -189,19 +204,23 @@ h2{
 <div class="content-container">
 <div class="content" id="graph">
 	<div id="graph-controls">
-		<h2>graphs</h2>
-		<div id="graph-list">
-		</div>
-		<h2>extrema</h2>
-		<form id="extrema">
-			<label for="xMin">xMin</label><input class="extreme" id="xMin"/>
-			<label for="xMax">xMax</label><input class="extreme" id="xMax"/>
-			<label for="yMin">yMin</label><input class="extreme" id="yMin"/>
-			<label for="yMax">yMax</label><input class="extreme" id="yMax"/>
-			<div class="clear">
-				<button id="extrema-update">update</button>
+		<div class="graph-control">
+			<h2>graphs</h2>
+			<div id="graph-list">
 			</div>
-		</form>
+		</div>
+		<div class="graph-control">
+			<h2>extrema</h2>
+			<form id="extrema">
+				<label for="xMin">xMin</label><input class="extreme" id="xMin"/>
+				<label for="xMax">xMax</label><input class="extreme" id="xMax"/>
+				<label for="yMin">yMin</label><input class="extreme" id="yMin"/>
+				<label for="yMax">yMax</label><input class="extreme" id="yMax"/>
+				<div class="clear">
+					<button id="extrema-update">update</button>
+				</div>
+			</form>
+		</div>
 	</div>
 	<div id="canvas-container">
 		<canvas id="canvas" width="600" height="400"></canvas>
@@ -212,11 +231,14 @@ h2{
 		<input id="expression-input" class="calc-input"/>
 		<button id="enter-button" type="submit">enter</button>
 	</div>
+	<!-- 
 	<div class="input-container">
-		<label for="expression-input">plot:</label>
+		<label for="plot-input">plot:</label>
 		<textarea id="plot-input" class="calc-input" rows="10" cols="80"></textarea>
 		<button id="plot-input-submit">add plot</button>
 	</div>
+	-->
+	<div class="clear"></div>
 </div>
 </div>
 {% endblock %}
