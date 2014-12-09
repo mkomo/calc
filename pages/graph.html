@@ -1,0 +1,222 @@
+{% extends "base-raw.html" %}
+
+{% block head_supplement %}
+<style>
+<!--
+/************ graph specific ***********/
+#graph{
+}
+#canvas-container{
+	border: 2px solid #ACACAC;
+	margin: 2px;
+	position: relative;
+	overflow: hidden;
+	height: 400px;
+	width: 600px;
+}
+#coordinate-tracker{
+	position: absolute;
+	bottom: 8px;
+	right: 8px;	
+}
+#canvas{
+}
+#graph-controls{
+	float: right;
+	padding: 2px 5px 5px 5px;
+}
+#graph-list{
+	height: 320px;
+	width: 200px;
+	margin: 0;
+	border: 1px solid #3C6D7F;
+	padding: 2px;
+	background-color: #e0e0e0;
+	overflow: auto;
+}
+.graph-list-entry {
+	clear: left;
+	margin: 2px;	
+	font-size: 12px;
+	font-weight: bold;
+	color: #000;
+	background-color: #e8e8e8;
+}
+.graph-list-entry:hover {
+	background-color: #f0f0f0;
+}
+.graph-list-entry .marker {
+	float: left;
+	margin: 6px 4px 4px 4px;
+	width: 10px;
+	height: 10px;
+}
+.graph-list-entry .label {
+	float: left;
+	margin: 2px;
+}
+.graph-list-entry .remove {
+	display: none;
+	float: right;
+	color: #555;
+	width: 14px;
+	text-align: center;
+	margin: 2px;
+}
+.graph-list-entry .remove:hover {
+	text-decoration: none;
+	background-color: #c44;
+	color: #000;
+}
+
+#extrema{
+	margin: 0;
+	padding: 0;	
+}
+#extrema label{
+	clear: both;
+	float: left;
+	width: 60px;	
+}
+
+button{
+	cursor: pointer;
+	font-size: 16px;
+	padding: 4px;
+	margin: 2px 4px 4px 0;
+	background-color: rgba(13,108,0,0.4);
+	color: #fff;
+	border: 2px solid rgba(13,108,0,0.8);
+}
+
+#extrema input{
+	float: left;
+	width: 160px;
+	border: 1px solid #3C6D7F;
+	margin: 2px;
+}
+h2{
+	margin: 0;
+	padding: 0;
+	font-size: 17px;
+	font-weight: bold;
+}
+#graph .calc-input{
+	margin-left: 0;
+	width: 500px;
+}
+.input-container label{
+	font-weight: bold;
+	font-size: 23px;
+	width: 80px;
+	display:block;
+	margin: 0 0 0 10px;
+}
+
+.input-container textarea{
+	vertical-align: baseline;
+}
+-->
+</style>
+
+    <script type="text/javascript" src="/static/js/jquery.notmin.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.mousewheel.js"></script>
+    <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
+    <script type="text/javascript" src="/static/js/calc.js"></script>
+    <script type="text/javascript" src="/static/js/calc-internal.js"></script>
+    <script type="text/javascript" src="/static/js/calc-test.js"></script>
+    <script type="text/javascript">
+    	$(function(){//onReady
+    		
+
+	var calc = new Calculator();
+
+	var input = new Input();
+	input.init();
+
+	_output = new GraphCanvas($('#canvas')[0], calc, input);
+
+	var config = {
+		boundingBox : {
+			xMin : -12.0,
+			xMax : 12.0,
+			yMin : -8.0,
+			yMax : 8.0
+		},
+		drag : true,
+		zoom : true
+	};
+
+	_output.init(config);
+
+	//example entry
+	_output.add('sin(x)');
+
+	$('#input').focus();
+
+	$('#plot-input-submit').click(function(){
+		var input = $('#plot-input').val();
+		
+		var coords = new Array();
+		var coordStrings = input.split("\n");
+		for (var i = 0; i < coordStrings.length; i++){
+			try {
+				var pair = coordStrings[i].split(/\s+/);
+				coords.push([Number(pair[0]),Number(pair[1])]);
+			} catch(ex){
+				console.log("error parsing coordinates: " + ex);
+			}
+		}
+		_output.addPlot({ 
+			coordArray: coords,
+			color: "rgba(255,0,0,1)",
+			line: false,
+			pointSize: 2
+		});
+		return false;
+	});
+
+	$('#canvas-container').resizable();
+
+
+    	});
+    </script>
+
+{% endblock %}
+
+{% block body %}
+
+<div class="content-container">
+<div class="content" id="graph">
+	<div id="graph-controls">
+		<h2>graphs</h2>
+		<div id="graph-list">
+		</div>
+		<h2>extrema</h2>
+		<form id="extrema">
+			<label for="xMin">xMin</label><input class="extreme" id="xMin"/>
+			<label for="xMax">xMax</label><input class="extreme" id="xMax"/>
+			<label for="yMin">yMin</label><input class="extreme" id="yMin"/>
+			<label for="yMax">yMax</label><input class="extreme" id="yMax"/>
+			<div class="clear">
+				<button id="extrema-update">update</button>
+			</div>
+		</form>
+	</div>
+	<div id="canvas-container">
+		<canvas id="canvas" width="600" height="400"></canvas>
+		<div id="coordinate-tracker"></div>
+	</div>
+	<div class="input-container" class="clear">
+		<label for="expression-input">y=</label>
+		<input id="expression-input" class="calc-input"/>
+		<button id="enter-button" type="submit">enter</button>
+	</div>
+	<div class="input-container">
+		<label for="expression-input">plot:</label>
+		<textarea id="plot-input" class="calc-input" rows="10" cols="80"></textarea>
+		<button id="plot-input-submit">add plot</button>
+	</div>
+</div>
+</div>
+{% endblock %}
