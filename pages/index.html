@@ -2,7 +2,6 @@
 
 {% block head_supplement %}
 <style>
-
 </style>
 <script type="text/javascript" src="/static/js/jquery.notmin.js"></script>
 <script type="text/javascript" src="/static/js/jquery.mousewheel.js"></script>
@@ -20,7 +19,9 @@ $(function(){//onReady
 	_output.init();
 
 	//example entry
-	_output.add('2+2^2/1');
+	if (_output.statementHistory.length === 0){
+		_output.add('2+2^2/4');
+	}
 
 	$('#input').focus();
 });
@@ -45,4 +46,7 @@ $(function(){//onReady
 		</div>
 	</div>
 </div>
+{% endblock %}
+
+{% block footer %}
 {% endblock %}

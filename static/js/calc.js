@@ -55,6 +55,7 @@ Notebook = function(pane, calculator, input){
 			}
 			self.input.focus();
 		});
+		this.load();
 	};
 	this.add = function(input){
 		var statement = new Statement(input);
@@ -71,7 +72,35 @@ Notebook = function(pane, calculator, input){
 				'</div>' +
 			'</div>');	
 		this.pane[0].scrollTop = this.pane[0].scrollHeight;
+
+		this.save();
+
 		return statement.hasError;
+	};
+	this.localStorageKey = 'CALC_WORKBOOK_HISTORY';
+	this.save = function(){
+		// Put the object into storage
+		localStorage.setItem(this.localStorageKey, this.serialize());
+
+	};
+	this.load = function(){
+		// Retrieve the object from storage
+		var retrievedString = localStorage.getItem(this.localStorageKey);
+		if (typeof retrievedString !== "undefined"){
+			var retrievedObject = JSON.parse(retrievedString);
+			console.log("retrieved the following history from local storage", retrievedObject);
+			for (var i = 0; i < retrievedObject.length; i++){
+				console.log("adding " + retrievedObject[i])
+				this.add(retrievedObject[i]);
+			}
+		}
+	};
+	this.serialize = function(){
+		var inputs = [];
+		for (var i = 0; i < this.statementHistory.length; i++) {
+			inputs.push(this.statementHistory[i].input)
+		}
+		return JSON.stringify(inputs)
 	};
 }
 
