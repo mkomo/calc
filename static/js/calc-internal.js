@@ -232,8 +232,8 @@ ExpressionFactory = function(){
 			} else {
 				throw 'invalid token "' + token + '"';
 			}
-			//console.log(root.toString());
 		}
+		//console.log(root.toString());
 		if (current != root)
 			throw 'unclosed parenthesis';
 		return root;
@@ -271,10 +271,11 @@ ExpressionFactory = function(){
  * A grouping is constructed in such a way that it knows the order in which to 
  * execute it's operations based on standard arithmetic rules (think PEMDAS).
  */
-Grouping = function(operator, left, right){
+Grouping = function(operator, left, right, parent){
 	this.operator = operator;
 	this.left = left;
 	this.right = right;
+	this.parent = parent;
 	this.leftIsNegative = false;
 	this.rightIsNegative = false;
 	
@@ -284,7 +285,7 @@ Grouping = function(operator, left, right){
 			if (this.operator.toString() == '^'){
 				return (this.leftIsNegative ? -1 : 1) * 
 							this.operator.apply(this.left.value(),
-											(this.rightIsNegative ? -1 : 1) * 
+											(this.rightIsNegative ? -1 : 1) *
 											this.right.value());
 			} else {
 				return this.operator.apply(
@@ -373,20 +374,33 @@ Expression = function(parent){
 			}
 
 		} else {
-			var diff = token.precedence - 
-					this.rightmostOperator.precedence;
+			var diff = token.precedence - this.rightmostOperator.precedence;
 			if (diff > 0 || (diff == 0 && token.string == '^')){
 				//either the precedence of this operator is greater than the 
 				//previously handled operator or it is equal and '^'. in either
 				//case, we compute right first, then left.
-				var g = new Grouping(token, this.currentGrouping.right, null);
+				var g = new Grouping(token, this.currentGrouping.right, null, this.currentGrouping);
 				this.currentGrouping.right = g;
 				this.currentGrouping = this.currentGrouping.right;
 			} else {
-				var g = new Grouping(token, this.currentGrouping, null);
-				this.currentGrouping.left = new Grouping(this.currentGrouping.operator, this.currentGrouping.left, this.currentGrouping.right);
-				this.currentGrouping.operator = token;
-				this.currentGrouping.right = null;
+				//the precedence of this operator is lower than the previous. the new left is the
+				//oldest ancestor of the current grouping with a higher-precedence operator than token.
+				var newLeftGrouping = this.currentGrouping;
+				while (newLeftGrouping.parent != null &&
+						newLeftGrouping.parent.operator != null &&
+						newLeftGrouping.parent.operator.precedence > token.precedence) {
+					newLeftGrouping = newLeftGrouping.parent;
+				}
+				if (newLeftGrouping.parent == null){
+					this.rootGrouping = new Grouping(token, newLeftGrouping, null, null)
+					this.currentGrouping = this.rootGrouping;
+				} else {
+					newLeftGrouping.left = new Grouping(newLeftGrouping.operator, newLeftGrouping.left,
+							newLeftGrouping.right, newLeftGrouping);
+					newLeftGrouping.operator = token;
+					newLeftGrouping.right = null;
+					this.currentGrouping = newLeftGrouping;
+				}
 			}
 			this.rightmostOperator = token;
 		}

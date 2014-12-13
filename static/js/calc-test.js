@@ -18,6 +18,7 @@ Tests = function(){
         ["3+2/2-1",3],//bug: the 3 is dropped when interpreting the -
         ["1+2/2*2",3],//bug: the multiplication is performed last
         ["1+2^2/2",3],//bug: division is performed last
+        ["1+1/2+1/2^2+1",2.75],//bug: group last + with 2^2 instead of 1/2^2
         ["1+2^3/2",5],
         //correct evaluation with increasing and decreasing precedence
         ["6*4+2",26],['2+6*4',26],
