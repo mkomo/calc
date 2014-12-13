@@ -1,6 +1,26 @@
 body {
 	background: #ffffff;
 }
+
+.nav li a {
+	margin-top: 25px;
+}
+
+@media screen and (max-width: 900px) {
+	.nav li a {
+		margin-top: 0px;
+	}
+}
+
+.nav li a.selected {
+	color: #fff;
+	background-color: rgba(13,108,0,0.4);
+}
+
+.nav li a:hover {
+	background-color: rgba(13,108,0,0.4);
+}
+
 .content {
 	min-height: 400px;
 }
@@ -27,7 +47,9 @@ body {
 	display: inline-block;
 	float: right;
 }
-
+.graph-link {
+	background: url('/static/img/icon-graph.png');
+}
 @media screen and (max-width: 900px) {
 	.content-container {
 		padding: 10px 0px;
