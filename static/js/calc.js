@@ -338,6 +338,8 @@ GraphCanvas = function(canvas, calculator, input){
 	this.draw = function(graph){
 		var coord = new Coordinate(this.xMin, graph.value(this.xMin));
 		var pixel = this.getPixel(coord);
+		var lastPixel = pixel;
+		var yMax = this.pixelHeight;
 		var lastY;
 		this.context.strokeStyle = this.getColor(graph.id);
 		this.context.beginPath();
@@ -345,7 +347,12 @@ GraphCanvas = function(canvas, calculator, input){
 		for (var xCurr = this.xMin; xCurr <= this.xMax; xCurr += this.xStep()){
 			coord = new Coordinate(xCurr, graph.value(xCurr));
 			pixel = this.getPixel(coord);
-			this.context.lineTo(pixel.x + 0.5,pixel.y - 0.5);
+			if ((pixel.y < 0 && lastPixel.y > yMax) || (pixel.y > yMax && lastPixel.y < 0)) {
+				this.context.moveTo(pixel.x + 0.5,pixel.y - 0.5);
+			} else {
+				this.context.lineTo(pixel.x + 0.5,pixel.y - 0.5);
+			}
+			lastPixel = pixel;
 		}
 		this.context.stroke();
 	}
