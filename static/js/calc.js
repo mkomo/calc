@@ -289,7 +289,6 @@ GraphCanvas = function(canvas, calculator, input){
 			}
 		} 
 		if (this.yMin < 0 && this.yMax > 0){
-			$.log(this.xMax - this.xMin > this.pixelWidth);
 			if (this.xMax - this.xMin < this.pixelWidth){
 				var center;
 				for (var i = Math.ceil(this.xMin); i <= Math.floor(this.xMax); i++){
@@ -387,11 +386,26 @@ GraphCanvas = function(canvas, calculator, input){
 		this.context.strokeStyle = this.getColor(graph.id);
 		this.context.beginPath();
 		this.context.moveTo(pixel.x,pixel.y);
+		var MAX_DIST = 1000;
 		for (var xCurr = this.xMin; xCurr <= this.xMax; xCurr += this.xStep()){
 			coord = new Coordinate(xCurr, graph.value(xCurr));
 			pixel = this.getPixel(coord);
-			if ((pixel.y < 0 && lastPixel.y > yMax) || (pixel.y > yMax && lastPixel.y < 0)) {
-				this.context.moveTo(pixel.x + 0.5,pixel.y - 0.5);
+
+			if (pixel.y < 0) {
+				if (lastPixel.y < 0 || lastPixel.y > yMax) {
+					// either the line from last pixel is entirely above screen or it transits
+					// screen, which indicates assymptote
+					this.context.moveTo(pixel.x + 0.5,Math.max(0-MAX_DIST,pixel.y));
+				} else {
+					// the line from last pixel starts within the screen
+					this.context.lineTo(pixel.x + 0.5,Math.max(0-MAX_DIST,pixel.y));
+				}
+			} else if (pixel.y > yMax) {
+				if (lastPixel.y < 0 || lastPixel.y > yMax) {
+					this.context.moveTo(pixel.x + 0.5,Math.max(yMax+MAX_DIST,pixel.y));
+				} else {
+					this.context.lineTo(pixel.x + 0.5,Math.max(yMax+MAX_DIST,pixel.y));
+				}
 			} else {
 				this.context.lineTo(pixel.x + 0.5,pixel.y - 0.5);
 			}
