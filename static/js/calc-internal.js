@@ -172,18 +172,23 @@ BUILT_IN_VARIABLES = [
 	new Variable('pi', Math.PI),
 	new Variable('e', Math.E)
 ];
+
+var ROUNDING_PRECISION = 1000000000000;
+var round = function(x){ return Math.round(x * ROUNDING_PRECISION)/ROUNDING_PRECISION };
+
 BUILT_IN_FUNCTIONS = [
-	new Funct('sin',function(x){ return Math.sin(x); }),
-	new Funct('cos',function(x){ return Math.cos(x); }),
-	new Funct('tan',function(x){ return Math.tan(x); }),
-	new Funct('arcsin',function(x){ return Math.asin(x); }),
-	new Funct('arccos',function(x){ return Math.acos(x); }),
-	new Funct('arctan',function(x){ return Math.atan(x); }),
-	new Funct('ln',function(x){ return Math.log(x); }),
-	new Funct('log',function(x){ return Math.log(x)/Math.log(10); }),
-	new Funct('log2',function(x){ return Math.log(x)/Math.log(2); }),
-	new Funct('sqrt',function(x){ return Math.sqrt(x); }),
-	new Funct('abs',function(x){ return Math.abs(x); })
+	new Funct('round',round),
+	new Funct('sin',function(x){ return round(Math.sin(x)); }),
+	new Funct('cos',function(x){ return round(Math.cos(x)); }),
+	new Funct('tan',function(x){ return round(Math.tan(x)); }),
+	new Funct('arcsin',function(x){ return round(Math.asin(x)); }),
+	new Funct('arccos',function(x){ return round(Math.acos(x)); }),
+	new Funct('arctan',function(x){ return round(Math.atan(x)); }),
+	new Funct('ln',function(x){ return round(Math.log(x)); }),
+	new Funct('log',function(x){ return round(Math.log(x)/Math.log(10)); }),
+	new Funct('log2',function(x){ return round(Math.log(x)/Math.log(2)); }),
+	new Funct('sqrt',function(x){ return round(Math.sqrt(x)); }),
+	new Funct('abs',function(x){ return round(Math.abs(x)); })
 ];
 
 ExpressionFactory = function(){
@@ -331,6 +336,8 @@ Expression = function(parent){
 	this.rootGrouping = new Grouping()
 	this.currentGrouping = this.rootGrouping
 	this.rightmostOperator = null;
+	this.funct = null;
+
 	if (parent == null){
 		this.parent = null;
 		this.root = this;
