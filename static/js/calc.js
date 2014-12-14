@@ -108,24 +108,24 @@ GraphCanvas = function(canvas, calculator, input){
 	this.canvas = canvas;
 	this.calculator = calculator;
 	this.input = input;
+
+	this.graphList = new Array();
+	this.plotList = new Array();
+
 	this.context = canvas.getContext('2d');
-	
+	this.graphListDisplay = $('#graph-list');
+
 	this.pixelWidth = $(canvas).width();
 	this.pixelHeight = $(canvas).height();
-	
+
 	this.xStep = function(){
 		return (this.xMax - this.xMin) / (this.pixelWidth - 1)
 	}
 	this.yStep = function(){
 		return (this.yMax - this.yMin) / (this.pixelHeight - 1)
 	}
-	
-	this.graphListDisplay = $('#graph-list');
-	this.graphList = new Array();
-	this.plotList = new Array();
-	
+
 	this.init = function(config){
-		this.updateBoundingBox(config.boundingBox);
 		if (config.drag){
 			$("#canvas").draggable({
 				stop: function() {
@@ -146,7 +146,7 @@ GraphCanvas = function(canvas, calculator, input){
 				_output.zoom(factor, pixel);
 				return false; // prevent default
 			});
-		}	
+		}
 		$("#canvas").mouseout(function(){
 			$('#coordinate-tracker').text('');
 		}).mousemove(function(e){
@@ -161,6 +161,7 @@ GraphCanvas = function(canvas, calculator, input){
 			_output.graphList.splice(index, 1);
 			_output.redraw();
 			_output.updateGraphList();
+			_output.save();
 			return false;
 		});
 		$('#extrema-update').click(function(e){
@@ -172,8 +173,15 @@ GraphCanvas = function(canvas, calculator, input){
 			});
 			return false;
 		});
+
+		if (!this.load()){
+			this.updateBoundingBox(config.boundingBox);
+			return false;
+		} else {
+			return true;
+		}
 	}
-	
+
 	this.redraw = function(){
 		//clear the canvas
 		this.canvas.width = this.canvas.width;
@@ -188,7 +196,7 @@ GraphCanvas = function(canvas, calculator, input){
 			this.draw(graph, i);
 		}
 	}
-	
+
 	this.updateGraphList = function(){
 		//clear the graph list
 		this.graphListDisplay.html('');
@@ -198,14 +206,14 @@ GraphCanvas = function(canvas, calculator, input){
 			this.appendToList(graph, i);
 		}
 	}
-	
+
 	this.updateExtremaInput = function(){
 		$('#xMin').val(this.xMin);
 		$('#xMax').val(this.xMax);
 		$('#yMin').val(this.yMin);
 		$('#yMax').val(this.yMax);
 	}
-	
+
 	this.translate = function(pixel){
 		$.log('translating');
 		var newTopLeft = this.getCoordinate(pixel);
@@ -218,7 +226,7 @@ GraphCanvas = function(canvas, calculator, input){
 			yMax : this.yMax - offsetV
 		});
 	}
-	
+
 	this.zoom = function(factor, pixel){
 		$.log('zooming');
 		var coord = this.getCoordinate(pixel);
@@ -229,26 +237,28 @@ GraphCanvas = function(canvas, calculator, input){
 			yMax : coord.y + factor * (this.yMax - coord.y)
 		});
 	}
-	
+
 	this.getCoordinate = function(pixel){
 		var x = this.xMin + pixel.x * this.xStep();
 		var y = this.yMax - pixel.y * this.yStep();
 		return new Coordinate(x,y);	
 	}
-	
+
 	this.getPixel = function(coord){
 		var x = Math.round((coord.x - this.xMin)/this.xStep());
 		var y = this.pixelHeight - 
 					Math.round((coord.y - this.yMin)/this.yStep());
 		return new Pixel(x,y);
 	}
-	
+
 	this.updateBoundingBox = function(bb){
 		this.xMin = bb.xMin;
 		this.xMax = bb.xMax;
 		this.yMin = bb.yMin;
 		this.yMax = bb.yMax;
-		
+
+		this.save();
+
 		this.redraw();
 		this.updateExtremaInput();
 	}
@@ -264,7 +274,7 @@ GraphCanvas = function(canvas, calculator, input){
 			new Pixel(origin.x, this.pixelHeight),
 			this.axisColor);
 	}
-	
+
 	this.drawHashes = function(){
 		if (this.xMin < 0 && this.xMax > 0){
 			if (this.yMax - this.yMin < this.pixelHeight){
@@ -292,35 +302,38 @@ GraphCanvas = function(canvas, calculator, input){
 			}
 		}
 	}
-	
+
 	this.drawLine = function(p1, p2, color){
 		this.context.strokeStyle = color;
 		this.context.beginPath();
 		this.context.moveTo(p1.x + 0.5,p1.y - 0.5);
 		this.context.lineTo(p2.x + 0.5,p2.y - 0.5);
-		this.context.stroke();		
+		this.context.stroke();
 	}
-	
+
 	this.drawRect = function(pTopLeft, w, h, color){
 		this.context.fillStyle = color;
 		this.context.fillRect(pTopLeft.x, pTopLeft.y, w, h);
 	}
-	
-	this.drawCircle = function(pCenter, r, color){	
+
+	this.drawCircle = function(pCenter, r, color){
 		this.context.fillStyle = color;
 		this.context.beginPath();
 		this.context.arc(pCenter.x, pCenter.y, r, 0, Math.PI*2, true);
 		this.context.closePath();
 		this.context.fill();
 	}
-	
-	this.add = function(input){
+
+	this.add = function(input, skipSave){
 		var graph = new Graph(input, calculator);
 		var id = this.graphList.push(graph) - 1;
 		graph.id = id
-		try { 
+		try {
 			this.draw(graph);
 			this.appendToList(graph);
+			if (typeof skipSave === "undefined" || !skipSave) {
+				this.save();
+			}
 		} catch(ex){
 			this.graphList.splice(id, 1);
 			return true;
@@ -337,6 +350,7 @@ GraphCanvas = function(canvas, calculator, input){
 		var id = this.plotList.push(plot);
 		plot.id = id;
 		this.drawPlot(plot);
+		this.save();
 	}
 	this.getColor = function(id){
 		var num = id % 6 + 1;
@@ -347,9 +361,9 @@ GraphCanvas = function(canvas, calculator, input){
 	this.appendToList = function(graph){
 		this.graphListDisplay.append(
 			'<div class="graph-list-entry">' +
-				'<a class="remove" href="javascript:void(0)" id="graph_' + 
+				'<a class="remove" href="javascript:void(0)" id="graph_' +
 					graph.id + '">x</a>' +
-				'<div class="marker" style="background-color:' + 
+				'<div class="marker" style="background-color:' +
 					this.getColor(graph.id)+'">&nbsp;</div>' +
 				'<div class="label">y=' +
 					(graph.input.length > 0 ? graph.input : '&nbsp;') +
@@ -402,6 +416,56 @@ GraphCanvas = function(canvas, calculator, input){
 			}
 		}
 	}
+
+	this.localStorageKey = 'CALC_GRAPH_MODEL';
+	this.save = function(){
+		console.log("saving graph model", this.serialize())
+		// Put the object into storage
+		localStorage.setItem(this.localStorageKey, JSON.stringify(this.serialize()));
+	};
+	this.load = function(){
+		// Retrieve the object from storage
+		var retrievedString = localStorage.getItem(this.localStorageKey);
+		if (typeof retrievedString !== "undefined"){
+			var retrievedObject = JSON.parse(retrievedString);
+			console.log("retrieved the following history from local storage", retrievedObject);
+			for (var i = 0; i < retrievedObject['graphList'].length; i++){
+				console.log("adding " + retrievedObject.graphList[i])
+				this.add(retrievedObject.graphList[i], true);
+			}
+
+			this.updateBoundingBox(retrievedObject.boundingBox);
+
+			this.redraw();
+			return true;
+		} else {
+			console.log("no graph data found in local storage");
+			return false;
+		}
+	};
+	this.serialize = function(){
+		var model = {};
+		var graphs = [];
+		for (var i = 0; i < this.graphList.length; i++) {
+			graphs.push(this.graphList[i].input)
+		}
+		model['graphList'] = graphs;
+
+		var plots = [];
+		for (var i = 0; i < this.plotList.length; i++) {
+			plots.push(this.plotList[i].input)
+		}
+		model['plotList'] = plots;
+
+		model['boundingBox'] = {
+			xMin : this.xMin,
+			xMax : this.xMax,
+			yMin : this.yMin,
+			yMax : this.yMax
+		};
+
+		return model
+	};
 }
 
 Pixel = function(x,y){

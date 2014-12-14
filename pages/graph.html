@@ -162,10 +162,13 @@ button{
 		zoom : true
 	};
 
-	_output.init(config);
+	var loaded = _output.init(config);
 
 	//example entry
-	_output.add('sin(x)');
+	if (!loaded) {
+		_output.add('sin(x)');
+		_output.add('e^x');
+	}
 
 	$('#input').focus();
 
