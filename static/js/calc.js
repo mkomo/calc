@@ -117,7 +117,8 @@ Notebook = function(pane, calculator, input){
 					statement.output +
 				'</pre>' +
 			'</div>');
-		this.pane[0].scrollTop = this.pane[0].scrollHeight;
+
+		window.scrollTo(0,document.body.scrollHeight);
 
 		this.save();
 
