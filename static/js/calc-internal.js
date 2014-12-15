@@ -34,9 +34,10 @@ Plot = function(coords, plotArgs){
 };
 
 Calculator = function(){
-	this.expressionFactory = new ExpressionFactory();	
+	this.expressionFactory = new ExpressionFactory();
 	_model = new CalculatorModel();
 	_model.init();
+	this.model = _model;
 	
 	this.execute = function(statement){
 		try {

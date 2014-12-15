@@ -44,6 +44,44 @@ Notebook = function(pane, calculator, input){
 	this.input = input;
 	this.statementHistory = new Array(); 
 	this.currentlyHovered = null;
+	this.reserved = {
+		"clear": function(notebook, statement){
+			notebook.statementHistory = new Array();
+			notebook.pane.empty();
+			notebook.save();
+			return false;
+		},
+		"env": function(notebook, statement){
+			var output = "functions:\n";
+			for (var fun in notebook.calculator.model['functions']){
+				output += " " + fun + ";"
+			}
+			output = output + "\nvariables:\n";
+			for (var v in notebook.calculator.model['variables']){
+				output += " " + v + '=' + notebook.calculator.model['variables'][v].val + ";";
+			}
+			output = output + "\nbinary operators:\n"
+			for (var v in notebook.calculator.expressionFactory.operators){
+				output += " " + v + ";";
+			}
+
+			statement.output = output;
+			statement.isInfo = true;
+			return true;
+		},
+		//"pop": function(notebook, statement){
+		//	statement.output = "remove last item";
+		//	statement.hasError = true;
+		//	return true;
+		//},
+		"help": function(notebook, statement){
+			statement.output = 'enter an mathematical expression that you want to evaluate\n' +
+				'such as "2^7-1" or "cos(3*pi/2)"';
+			statement.isInfo = true;
+
+			return true;
+		}
+	}
 	this.init = function(){
 		var self = this;
 		$('.statement *').live('click',function(e){
@@ -59,18 +97,26 @@ Notebook = function(pane, calculator, input){
 	};
 	this.add = function(input){
 		var statement = new Statement(input);
-		this.calculator.execute(statement);
+		if (this.reserved[input] != null){
+			var result = this.reserved[input](this, statement);
+			console.log(statement);
+			if (!result) {
+				return;
+			}
+		} else {
+			this.calculator.execute(statement);
+		}
 		var id = this.statementHistory.push(statement) - 1;
 		this.pane.append(
-			'<div class="statement" id="statement_'+id+'">' + 
+			'<div class="statement" id="statement_'+id+'">' +
 				'<div class="input">' + 
-					(statement.input.length > 0 ? statement.input : '&nbsp;') + 
+					(statement.input.length > 0 ? statement.input : '&nbsp;') +
 				'</div>' +
-				'<div class="output' + 
-					(statement.hasError ? ' error' : '')+ '">' + 
+				'<pre class="output' + (statement.hasError || statement.isInfo ? ' error' : '')+
+				'">' +
 					statement.output +
-				'</div>' +
-			'</div>');	
+				'</pre>' +
+			'</div>');
 		this.pane[0].scrollTop = this.pane[0].scrollHeight;
 
 		this.save();
