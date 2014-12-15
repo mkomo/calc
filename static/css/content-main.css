@@ -70,9 +70,6 @@ body {
 	display: inline-block;
 	float: right;
 }
-.graph-link {
-	background: url('/static/img/icon-graph.png');
-}
 @media screen and (max-width: 900px) {
 	.content-container {
 		padding: 10px 0px;

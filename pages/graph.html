@@ -26,7 +26,7 @@
 	padding: 2px 5px 5px 5px;
 }
 #graph-list{
-	height: 320px;
+	min-height: 200px;
 	width: 200px;
 	margin: 0;
 	border: 1px solid #3C6D7F;
@@ -85,8 +85,8 @@
 	border: 1px solid #3C6D7F;
 	margin: 2px;
 }
-h2{
-	margin: 0;
+#graph-controls h2{
+	margin: 0 0 5px 0;
 	padding: 0;
 	font-size: 17px;
 	font-weight: bold;
@@ -122,13 +122,14 @@ button{
 		float: none;
 	}
 	.graph-control {
-		float: left;
+		float: none;
 	}
 	
 	#graph-list{
+		min-height: 110px;
 		height: 110px;
-		width: 200px;
-		margin-right: 100px;
+		width: inherit;
+		margin-right: 10px;
 	}
 }
 -->
@@ -140,14 +141,19 @@ button{
     <script type="text/javascript" src="/static/js/calc.js"></script>
     <script type="text/javascript" src="/static/js/calc-internal.js"></script>
     <script type="text/javascript" src="/static/js/calc-test.js"></script>
-    <script type="text/javascript">
-    	$(function(){//onReady
-    		
-
+<script type="text/javascript">
+$(function(){//onReady
 	var calc = new Calculator();
 
 	var input = new Input();
 	input.init();
+
+	if ($('#canvas').width() > $('#graph').width()){
+		console.log($('#graph').width());
+		$('#canvas-container').width($('#graph').width());
+		$('#canvas').attr('width',$('#graph').width());
+		$('#graph .calc-input').width($('#graph').width() - 120)
+	}
 
 	_output = new GraphCanvas($('#canvas')[0], calc, input);
 
@@ -172,6 +178,7 @@ button{
 
 	$('#input').focus();
 
+	//TODO remove this
 	$('#plot-input-submit').click(function(){
 		var input = $('#plot-input').val();
 		
@@ -194,11 +201,11 @@ button{
 		return false;
 	});
 
+	//TODO remove this or make it work
 	$('#canvas-container').resizable();
 
-
-    	});
-    </script>
+});
+</script>
 
 {% endblock %}
 
@@ -208,12 +215,12 @@ button{
 <div class="content" id="graph">
 	<div id="graph-controls">
 		<div class="graph-control">
-			<h2>graphs</h2>
+			<h2 id="graph-list-header">graphs</h2>
 			<div id="graph-list">
 			</div>
 		</div>
 		<div class="graph-control">
-			<h2>extrema</h2>
+			<h2 id="extrema-header">extrema</h2>
 			<form id="extrema">
 				<label for="xMin">xMin</label><input class="extreme" id="xMin"/>
 				<label for="xMax">xMax</label><input class="extreme" id="xMax"/>
