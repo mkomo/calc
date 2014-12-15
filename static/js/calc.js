@@ -487,18 +487,24 @@ GraphCanvas = function(canvas, calculator, input){
 	this.load = function(){
 		// Retrieve the object from storage
 		var retrievedString = localStorage.getItem(this.localStorageKey);
-		if (typeof retrievedString !== "undefined"){
+		if (typeof retrievedString != "undefined" && retrievedString != null){
 			var retrievedObject = JSON.parse(retrievedString);
 			console.log("retrieved the following history from local storage", retrievedObject);
-			for (var i = 0; i < retrievedObject['graphList'].length; i++){
-				console.log("adding " + retrievedObject.graphList[i])
-				this.add(retrievedObject.graphList[i], true);
+			if (retrievedObject != null) {
+				if (typeof retrievedObject['graphList'] != 'undefined'){
+					for (var i = 0; i < retrievedObject['graphList'].length; i++){
+						console.log("adding " + retrievedObject.graphList[i])
+						this.add(retrievedObject.graphList[i], true);
+					}
+				}
+
+				if (typeof retrievedObject['graphList'] != 'undefined'){
+					this.updateBoundingBox(retrievedObject.boundingBox);
+				}
+
+				this.redraw();
+				return true;
 			}
-
-			this.updateBoundingBox(retrievedObject.boundingBox);
-
-			this.redraw();
-			return true;
 		} else {
 			console.log("no graph data found in local storage");
 			return false;
