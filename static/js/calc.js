@@ -176,26 +176,32 @@ GraphCanvas = function(canvas, calculator, input){
 		var originalWidth = $("#canvas").width();
 
 		var hammertime = new Hammer($("#canvas")[0]);
+		var panCount = 0;
 
 		if (config.drag){
 			hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
 			hammertime.on('pan', function(ev) {
-				console.log("pan");
-				$("#canvas").css({
-					top: ev.deltaY+'px',
-					left: ev.deltaX+'px'
-				});
-				ev.preventDefault();
+				if (panCount > 2) {
+					console.log("pan");
+					$("#canvas").css({
+						top: ev.deltaY+'px',
+						left: ev.deltaX+'px'
+					});
+					ev.preventDefault();
+				}
+				panCount++;
 			});
 			hammertime.on('panend', function(ev) {
-				console.log("panend");
-				console.log(ev);
-				var pixel = new Pixel(canvas.offsetLeft, canvas.offsetTop);
-				$("#canvas").css({
-					top: '0px',
-					left: '0px'
-				});
-				_output.translate(pixel);
+				if (panCount > 2) {
+					console.log("panend");
+					var pixel = new Pixel(canvas.offsetLeft, canvas.offsetTop);
+					$("#canvas").css({
+						top: '0px',
+						left: '0px'
+					});
+					_output.translate(pixel);
+				}
+				panCount = 0;
 			});//*/
 		}
 		if (config.zoom){
@@ -216,24 +222,35 @@ GraphCanvas = function(canvas, calculator, input){
 			});
 			hammertime.on('pinchend', function(ev) {
 				console.log("pinchend");
-				console.log(ev);
 
-				var offset = $('#canvas-container').offset();
-				var pixel0 = new Pixel(ev.pointers[0].pageX - offset.left,
-						ev.pointers[0].pageY - offset.top);
-				var pixel1 = new Pixel(ev.pointers[1].pageX - offset.left,
-						ev.pointers[1].pageY - offset.top);
-				var m = new Pixel((pixel0.x + pixel1.x)/2, (pixel0.y + pixel1.y)/2)
-				var center = new Pixel((m.x + ev.scale*(ev.deltaX - m.x))/(1-ev.scale),
-						(m.y + ev.scale*(ev.deltaY - m.y))/(1-ev.scale));
+				var top = parseInt($('#canvas').css('top'), 10);
+				var left = parseInt($('#canvas').css('left'), 10);
+				var width = $('#canvas').width();
+				var originalHeight = $('#canvas-container').height();
 
-				_output.zoom(1/ev.scale, center);
+				var upperLeftPixel = new Pixel(-1*left*(originalWidth/width),
+						-1*top*(originalWidth/width))
+				var lowerRightPixel = new Pixel((originalWidth - left)*(originalWidth/width),
+						(originalHeight - top)*(originalWidth/width));
+
+				var upperLeftCoord = _output.getCoordinate(upperLeftPixel);
+				var lowerRightCoord = _output.getCoordinate(lowerRightPixel);
+
+				//reset things
 				$("#canvas").width(originalWidth);
 				$("#canvas").css({
 					top: '0px',
 					left: '0px'
 				});//*/
 
+				_output.updateBoundingBox({
+					xMin : upperLeftCoord.x,
+					xMax : lowerRightCoord.x,
+					yMin : lowerRightCoord.y,
+					yMax : upperLeftCoord.y
+				});
+
+				panCount = 0;
 			});
 
 			$("#canvas").mousewheel(function(e, delta) {
@@ -316,8 +333,8 @@ GraphCanvas = function(canvas, calculator, input){
 		var newTopLeft = this.getCoordinate(pixel);
 		var offsetH = newTopLeft.x - this.xMin;
 		var offsetV = newTopLeft.y - this.yMax;
-		console.log('translating so that new top left is ',
-				new Pixel(this.xMin - offsetH, this.yMax - offsetV));
+		console.log('translating by ',
+				new Coordinate(offsetH, offsetV));
 		this.updateBoundingBox({
 			xMin : this.xMin - offsetH,
 			xMax : this.xMax - offsetH,
@@ -328,7 +345,7 @@ GraphCanvas = function(canvas, calculator, input){
 
 	this.zoom = function(factor, pixel){
 		var coord = this.getCoordinate(pixel);
-		console.log('zooming factor and coord ', factor, coord);
+		console.log('zooming factor and coord ', 1/factor, coord);
 		this.updateBoundingBox({
 			xMin : coord.x - factor * (coord.x - this.xMin),
 			xMax : coord.x + factor * (this.xMax - coord.x),
