@@ -178,6 +178,18 @@ $(function(){//onReady
 
 	$('#input').focus();
 
+
+	$('#extrema-reset').click(function(){
+		_output.updateBoundingBox({
+			xMin : -10,
+			xMax : 10,
+			yMin : -10,
+			yMax : 10
+		});
+		return false;
+	});
+
+
 	//TODO remove this
 	$('#plot-input-submit').click(function(){
 		var input = $('#plot-input').val();
@@ -228,6 +240,8 @@ $(function(){//onReady
 				<label for="yMax">yMax</label><input class="extreme" id="yMax"/>
 				<div class="clear">
 					<button id="extrema-update">update</button>
+					<button id="extrema-reset">reset</button>
+					<!-- jump -->
 				</div>
 			</form>
 		</div>
