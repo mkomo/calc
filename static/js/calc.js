@@ -173,19 +173,69 @@ GraphCanvas = function(canvas, calculator, input){
 	}
 
 	this.init = function(config){
+		var originalWidth = $("#canvas").width();
+
+		var hammertime = new Hammer($("#canvas")[0]);
+
 		if (config.drag){
-			$("#canvas").draggable({
-				stop: function() {
-					var pixel = new Pixel(canvas.offsetLeft, canvas.offsetTop);
-					$("#canvas").css({
-						top: '0px',
-						left: '0px'
-					}); 
-					_output.translate(pixel);
-				}
+			hammertime.get('pan').set({ direction: Hammer.DIRECTION_ALL });
+			hammertime.on('pan', function(ev) {
+				console.log("pan");
+				$("#canvas").css({
+					top: ev.deltaY+'px',
+					left: ev.deltaX+'px'
+				});
+				ev.preventDefault();
 			});
+			hammertime.on('panend', function(ev) {
+				console.log("panend");
+				console.log(ev);
+				var pixel = new Pixel(canvas.offsetLeft, canvas.offsetTop);
+				$("#canvas").css({
+					top: '0px',
+					left: '0px'
+				});
+				_output.translate(pixel);
+			});//*/
 		}
 		if (config.zoom){
+			hammertime.get('pinch').set({ enable: true });
+			hammertime.on('pinch', function(ev) {
+				console.log("pinch");
+				var offset = $('#canvas-container').offset();
+				var pixel0 = new Pixel(ev.pointers[0].pageX - offset.left,
+						ev.pointers[0].pageY - offset.top);
+				var pixel1 = new Pixel(ev.pointers[1].pageX - offset.left,
+						ev.pointers[1].pageY - offset.top);
+				var m = new Pixel((pixel0.x + pixel1.x)/2, (pixel0.y + pixel1.y)/2)
+				$("#canvas").css({
+					top: (m.y + ev.scale*(ev.deltaY - m.y))+'px',
+					left: (m.x + ev.scale*(ev.deltaX - m.x))+'px'
+				});
+				$("#canvas").width(originalWidth*ev.scale);
+			});
+			hammertime.on('pinchend', function(ev) {
+				console.log("pinchend");
+				console.log(ev);
+
+				var offset = $('#canvas-container').offset();
+				var pixel0 = new Pixel(ev.pointers[0].pageX - offset.left,
+						ev.pointers[0].pageY - offset.top);
+				var pixel1 = new Pixel(ev.pointers[1].pageX - offset.left,
+						ev.pointers[1].pageY - offset.top);
+				var m = new Pixel((pixel0.x + pixel1.x)/2, (pixel0.y + pixel1.y)/2)
+				var center = new Pixel((m.x + ev.scale*(ev.deltaX - m.x))/(1-ev.scale),
+						(m.y + ev.scale*(ev.deltaY - m.y))/(1-ev.scale));
+
+				_output.zoom(1/ev.scale, center);
+				$("#canvas").width(originalWidth);
+				$("#canvas").css({
+					top: '0px',
+					left: '0px'
+				});//*/
+
+			});
+
 			$("#canvas").mousewheel(function(e, delta) {
 				var offset = $('#canvas').offset();
 				var pixel = new Pixel(e.pageX - offset.left, e.pageY - offset.top);
@@ -193,6 +243,7 @@ GraphCanvas = function(canvas, calculator, input){
 				_output.zoom(factor, pixel);
 				return false; // prevent default
 			});
+			//*/
 		}
 		$("#canvas").mouseout(function(){
 			$('#coordinate-tracker').text('');
@@ -262,10 +313,11 @@ GraphCanvas = function(canvas, calculator, input){
 	}
 
 	this.translate = function(pixel){
-		$.log('translating');
 		var newTopLeft = this.getCoordinate(pixel);
 		var offsetH = newTopLeft.x - this.xMin;
 		var offsetV = newTopLeft.y - this.yMax;
+		console.log('translating so that new top left is ',
+				new Pixel(this.xMin - offsetH, this.yMax - offsetV));
 		this.updateBoundingBox({
 			xMin : this.xMin - offsetH,
 			xMax : this.xMax - offsetH,
@@ -275,8 +327,8 @@ GraphCanvas = function(canvas, calculator, input){
 	}
 
 	this.zoom = function(factor, pixel){
-		$.log('zooming');
 		var coord = this.getCoordinate(pixel);
+		console.log('zooming factor and coord ', factor, coord);
 		this.updateBoundingBox({
 			xMin : coord.x - factor * (coord.x - this.xMin),
 			xMax : coord.x + factor * (this.xMax - coord.x),
@@ -332,7 +384,7 @@ GraphCanvas = function(canvas, calculator, input){
 						new Pixel(center.x - 2, center.y),
 						new Pixel(center.x + 2, center.y),
 						this.axisColor)
-				}				
+				}
 			}
 		} 
 		if (this.yMin < 0 && this.yMax > 0){

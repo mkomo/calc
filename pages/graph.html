@@ -20,6 +20,7 @@
 	right: 8px;	
 }
 #canvas{
+	position: absolute;
 }
 #graph-controls{
 	float: right;
@@ -135,12 +136,13 @@ button{
 -->
 </style>
 
-    <script type="text/javascript" src="/static/js/jquery.notmin.js"></script>
+    <script type="text/javascript" src="/static/js/jquery.min.js"></script>
     <script type="text/javascript" src="/static/js/jquery.mousewheel.js"></script>
     <script type="text/javascript" src="/static/js/jquery-ui.min.js"></script>
     <script type="text/javascript" src="/static/js/calc.js"></script>
     <script type="text/javascript" src="/static/js/calc-internal.js"></script>
     <script type="text/javascript" src="/static/js/calc-test.js"></script>
+    <script type="text/javascript" src="/static/js/hammer.min.js"></script>
 <script type="text/javascript">
 $(function(){//onReady
 	var calc = new Calculator();
